@@ -8,60 +8,99 @@ const errorMiddleware = require('./middleware/error');
 const app = express();
 
 // ==========================================
-// Security — Maximum Level
+// Security
 // ==========================================
-app.use(helmet({ contentSecurityPolicy: { directives: { defaultSrc: ["'self'"], scriptSrc: ["'self'"], objectSrc: ["'none'"], upgradeInsecureRequests: [] } }, crossOriginEmbedderPolicy: true, crossOriginOpenerPolicy: true, crossOriginResourcePolicy: { policy: 'same-site' }, referrerPolicy: { policy: 'strict-origin-when-cross-origin' } }));
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  })
+);
 
-// Strict CORS
-app.use(cors({ origin: config.cors.origin, credentials: true, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'] }));
+// CORS — accept configured origin(s)
+const allowedOrigins = (config.cors.origin || 'http://localhost:3000')
+  .split(',')
+  .map((s) => s.trim());
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true); // curl / mobile
+      if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error(`CORS blocked: ${origin}`));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  })
+);
 
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
-// Rate limiting — Strict
+// Rate limiting — reasonable for a real app
 const limiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
+  windowMs: config.rateLimit.windowMs,
+  max: config.rateLimit.max,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests. Security limit triggered.' },
+  message: { success: false, error: 'Too many requests. Please try again later.' },
 });
 app.use('/api/', limiter);
 
-// Input Sanitization (basic security layer)
+// Simple sanitization (defense in depth)
 app.use((req, res, next) => {
-  const sanitize = (str) => typeof str === 'string' ? str.replace(/[<>"']/g, '').trim() : str;
-  if (req.body) { for (const key in req.body) { if (typeof req.body[key] === 'string') req.body[key] = sanitize(req.body[key]); } }
+  const sanitize = (s) => (typeof s === 'string' ? s.replace(/<script/gi, '&lt;script') : s);
+  const walk = (obj) => {
+    if (!obj || typeof obj !== 'object') return;
+    for (const k of Object.keys(obj)) {
+      if (typeof obj[k] === 'string') obj[k] = sanitize(obj[k]);
+      else if (typeof obj[k] === 'object') walk(obj[k]);
+    }
+  };
+  walk(req.body);
+  walk(req.query);
   next();
 });
 
-// Health check
-app.get('/api/health', (req, res) => res.json({ status: 'healthy', service: 'lumina-backend', version: '1.0.0', timestamp: new Date().toISOString() }));
+// Health
+app.get('/api/health', (req, res) =>
+  res.json({
+    success: true,
+    status: 'healthy',
+    service: 'lumina-backend',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+  })
+);
 
-// API Routes
+// Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/products', require('./routes/products'));
 app.use('/api/users', require('./routes/users'));
-app.use('/api/orders', require('./routes/orders'));
+app.use('/api/addresses', require('./routes/addresses'));
+app.use('/api/products', require('./routes/products'));
+app.use('/api/categories', require('./routes/categories'));
+app.use('/api/brands', require('./routes/brands'));
 app.use('/api/cart', require('./routes/cart'));
 app.use('/api/wishlist', require('./routes/wishlist'));
+app.use('/api/orders', require('./routes/orders'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/payments', require('./routes/payments'));
+app.use('/api/admin', require('./routes/admin'));
 
-// 404 Handler
+// 404 + error
 app.use(errorMiddleware.notFound);
-
-// Global Error Handler
 app.use(errorMiddleware.errorHandler);
 
-const PORT = config.port;
-app.listen(PORT, () => {
-  console.log(`\n========================================`);
-  console.log(`✅ Lumina Backend running on port ${PORT}`);
-  console.log(`🌐 Environment: ${config.env}`);
-  console.log(`📡 API Base: http://localhost:${PORT}/api`);
-  console.log(`🔒 JWT Secret configured`);
-  console.log(`========================================\n`);
-});
+if (require.main === module) {
+  const PORT = config.port;
+  app.listen(PORT, () => {
+    console.log(`\n========================================`);
+    console.log(`✅ Lumina Backend running on port ${PORT}`);
+    console.log(`🌐 Environment: ${config.env}`);
+    console.log(`📡 API Base: http://localhost:${PORT}/api`);
+    console.log(`🔒 CORS allowed origins: ${allowedOrigins.join(', ')}`);
+    console.log(`========================================\n`);
+  });
+}
 
 module.exports = app;

@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
-const config = require('../config');
+const config = require('../../config');
 
 const prisma = new PrismaClient();
 
