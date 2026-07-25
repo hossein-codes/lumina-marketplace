@@ -34,3 +34,6 @@ Thumbs.db
 # Backend specific
 backend/node_modules/
 backend/prisma/dev.db
+.env
+.env.*
+backend/.env
