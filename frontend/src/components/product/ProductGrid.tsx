@@ -1,44 +1,27 @@
-import type { Product } from '@/lib/types';
+"use client";
 import { ProductCard } from './ProductCard';
 import { Skeleton } from '@/components/ui/Skeleton';
 
-export function ProductGrid({
-  products,
-  loading,
-  emptyMessage = 'کالایی یافت نشد',
-}: {
-  products?: Product[];
-  loading?: boolean;
-  emptyMessage?: string;
-}) {
+export function ProductGrid({ products, loading }: { products?: any[]; loading?: boolean }) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-        {Array.from({ length: 10 }).map((_, i) => (
-          <div key={i} className="rounded-2xl overflow-hidden border border-[var(--border-subtle)]">
-            <Skeleton className="aspect-square rounded-none" />
-            <div className="p-3 space-y-2">
-              <Skeleton className="h-3 w-4/5" />
-              <Skeleton className="h-3 w-2/5" />
-              <Skeleton className="h-4 w-3/5" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <div key={i} className="bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden">
+            <Skeleton className="aspect-[4/3] w-full" />
+            <div className="p-4 flex flex-col gap-3">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-8 w-full rounded-lg" />
             </div>
           </div>
         ))}
       </div>
     );
   }
-
-  if (!products || products.length === 0) {
-    return (
-      <div className="text-center py-16 text-[var(--text-muted)] text-sm">{emptyMessage}</div>
-    );
-  }
-
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
-      {products.map((p) => (
-        <ProductCard key={p.id} product={p} />
-      ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+      {products?.map((p) => <ProductCard key={p.id} product={p} />)}
     </div>
   );
 }

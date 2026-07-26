@@ -1,182 +1,137 @@
-/**
- * Shared TypeScript types that mirror the backend Prisma models.
- * Keep in sync with backend/prisma/schema.prisma
- */
+import { UserRole, OrderStatus, PaymentMethod, PaymentStatus } from '@prisma/client';
 
-export type UserRole = 'CUSTOMER' | 'SELLER' | 'ADMIN';
-
-export interface User {
+export type User = {
   id: string;
   email: string;
   firstName: string;
-  lastName?: string | null;
+  lastName: string;
   phone?: string | null;
-  avatar?: string | null;
   role: UserRole;
-  isActive?: boolean;
-  emailVerified?: boolean;
-  createdAt?: string;
-  addresses?: Address[];
-}
+  isActive: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
 
-export interface Address {
-  id: string;
-  userId: string;
-  label?: string | null;
-  street: string;
-  city: string;
-  province: string;
-  zipCode: string;
-  country: string;
-  isDefault: boolean;
-  createdAt?: string;
-}
-
-export interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  image?: string | null;
-  parentId?: string | null;
-  parent?: Category | null;
-  children?: Category[];
-  _count?: { products: number };
-}
-
-export interface Brand {
-  id: string;
-  name: string;
-  slug: string;
-  description?: string | null;
-  logo?: string | null;
-  _count?: { products: number };
-}
-
-export interface Review {
-  id: string;
-  productId: string;
-  userId: string;
-  rating: number;
-  comment?: string | null;
-  createdAt: string;
-  user?: { firstName: string; lastName?: string | null };
-}
-
-export interface Product {
+export type Product = {
   id: string;
   title: string;
   slug: string;
   description: string;
   price: number | string;
-  discountPercentage?: number | string | null;
+  discountPercentage?: number | null;
+  stock: number;
+  sku: string;
   thumbnail: string;
   images: string[];
-  brandId?: string | null;
-  categoryId: string;
-  stock: number;
-  isActive: boolean;
+  tags: string[];
+  rating?: number | null;
+  reviewCount: number;
   isNew: boolean;
   isFlashSale: boolean;
-  rating: number | string;
-  reviewCount: number;
-  sku?: string | null;
-  weight?: number | string | null;
-  dimensions?: string | null;
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  brand?: Brand | null;
+  isActive: boolean;
+  categoryId: string;
+  brandId: string;
   category?: Category;
-  reviews?: Review[];
-}
+  brand?: Brand;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
 
-export interface CartItem {
+export type Category = {
   id: string;
-  cartId: string;
-  productId: string;
-  quantity: number;
-  product?: Product;
-}
+  name: string;
+  slug: string;
+  description?: string | null;
+  image: string;
+  parentId?: string | null;
+  isActive: boolean;
+  parent?: Category | null;
+  children?: Category[];
+  products?: Product[];
+};
 
-export interface Cart {
+export type Brand = {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string | null;
+  logo?: string | null;
+  isActive: boolean;
+  products?: Product[];
+};
+
+export type Address = {
+  id: string;
+  userId: string;
+  label?: string | null;
+  fullName: string;
+  street: string;
+  city: string;
+  postalCode: string;
+  country: string;
+  isDefault: boolean;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
+
+export type CartItemData = {
   id?: string;
-  userId?: string;
-  items: CartItem[];
-}
-
-export interface WishlistItem {
-  id: string;
-  userId: string;
-  productId: string;
-  product?: Product;
-  createdAt: string;
-}
-
-export type OrderStatus =
-  | 'PENDING'
-  | 'CONFIRMED'
-  | 'PROCESSING'
-  | 'SHIPPED'
-  | 'DELIVERED'
-  | 'CANCELLED'
-  | 'REFUNDED';
-
-export type PaymentMethod = 'CASH_ON_DELIVERY' | 'BANK_TRANSFER' | 'CARD' | 'WALLET';
-export type PaymentStatus = 'PENDING' | 'COMPLETED' | 'FAILED' | 'REFUNDED';
-
-export interface OrderItem {
-  id: string;
-  orderId: string;
   productId: string;
   quantity: number;
-  unitPrice: number | string;
-  totalPrice: number | string;
   product?: Product;
-}
+};
 
-export interface Order {
+export type WishlistItemData = {
+  id?: string;
+  productId: string;
+  product?: Product;
+};
+
+export type Order = {
   id: string;
   userId: string;
-  orderNumber: string;
   status: OrderStatus;
-  subtotal: number | string;
-  shippingCost: number | string;
-  taxAmount: number | string;
-  totalAmount: number | string;
-  currency: string;
   shippingAddressId?: string | null;
   billingAddressId?: string | null;
-  paymentMethod?: PaymentMethod | null;
+  subtotal: number | string;
+  tax: number | string;
+  total: number | string;
   trackingCode?: string | null;
-  notes?: string | null;
-  createdAt: string;
-  updatedAt: string;
-  items: OrderItem[];
-  user?: Pick<User, 'email' | 'firstName' | 'lastName'>;
-}
+  items?: OrderItemData[];
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
 
-export interface Payment {
+export type OrderItemData = {
   id: string;
   orderId: string;
-  amount: number | string;
+  productId: string;
+  title: string;
+  price: number | string;
+  quantity: number;
+  thumbnail: string;
+};
+
+export type Review = {
+  id: string;
+  userId: string;
+  productId: string;
+  rating: number;
+  comment?: string | null;
+  isVerified: boolean;
+  user?: User;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};
+
+export type Payment = {
+  id: string;
+  orderId?: string | null;
+  userId: string;
   method: PaymentMethod;
+  amount: number | string;
   status: PaymentStatus;
-  transactionId?: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Paginated<T> {
-  data: T[];
-  meta: { page: number; limit: number; total: number };
-}
-
-export interface AdminStats {
-  users: number;
-  products: number;
-  orders: number;
-  revenue: number;
-  ordersByStatus: { status: OrderStatus; _count: { _all: number } }[];
-  topProducts: Pick<Product, 'id' | 'title' | 'slug' | 'thumbnail' | 'price' | 'rating' | 'stock'>[];
-}
+  reference?: string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+};

@@ -1,78 +1,42 @@
-'use client';
-
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { Loader2 } from 'lucide-react';
 
-type Variant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
-type Size = 'sm' | 'md' | 'lg' | 'icon';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
-export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: Variant;
-  size?: Size;
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
-  leftIcon?: ReactNode;
-  rightIcon?: ReactNode;
-  fullWidth?: boolean;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
-const variantClasses: Record<Variant, string> = {
-  primary:
-    'bg-[var(--color-brand-500)] text-white hover:bg-[var(--color-brand-600)] active:bg-[var(--color-brand-700)] shadow-[var(--shadow-sm)]',
-  secondary:
-    'bg-[var(--surface-muted)] text-[var(--text-primary)] hover:bg-[var(--color-ink-200)]',
-  outline:
-    'border border-[var(--border-strong)] bg-[var(--surface-card)] text-[var(--text-primary)] hover:bg-[var(--surface-muted)]',
-  ghost: 'text-[var(--text-primary)] hover:bg-[var(--surface-muted)]',
-  danger: 'bg-[var(--color-danger-500)] text-white hover:bg-[var(--color-danger-600)]',
-  success: 'bg-[var(--color-success-500)] text-white hover:bg-[var(--color-success-600)]',
-};
-
-const sizeClasses: Record<Size, string> = {
-  sm: 'h-8 px-3 text-xs rounded-md gap-1.5',
-  md: 'h-10 px-4 text-sm rounded-lg gap-2',
-  lg: 'h-12 px-5 text-base rounded-xl gap-2',
-  icon: 'h-10 w-10 rounded-lg justify-center',
-};
-
-export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  (
-    {
-      variant = 'primary',
-      size = 'md',
-      loading,
-      leftIcon,
-      rightIcon,
-      fullWidth,
-      className,
-      children,
-      disabled,
-      ...rest
-    },
-    ref
-  ) => {
-    return (
-      <button
-        ref={ref}
-        disabled={disabled || loading}
-        className={cn(
-          'inline-flex items-center justify-center font-medium transition-colors select-none',
-          'disabled:opacity-60 disabled:cursor-not-allowed',
-          variantClasses[variant],
-          sizeClasses[size],
-          fullWidth && 'w-full',
-          className
-        )}
-        {...rest}
-      >
-        {loading ? (
-          <span className="inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-        ) : (
-          leftIcon
-        )}
-        {children}
-        {!loading && rightIcon}
-      </button>
-    );
-  }
-);
-Button.displayName = 'Button';
+export function Button({ variant = 'primary', size = 'md', loading = false, leftIcon, rightIcon, className, children, disabled, ...props }: ButtonProps) {
+  const variants: Record<ButtonVariant, string> = {
+    primary: 'bg-brand-500 text-white hover:bg-brand-600 shadow-md hover:shadow-glow',
+    secondary: 'bg-ink-800 text-white hover:bg-ink-900',
+    outline: 'border border-ink-300 text-ink-700 hover:bg-ink-50',
+    ghost: 'text-ink-600 hover:text-brand-600 hover:bg-brand-50',
+    danger: 'bg-danger-500 text-white hover:bg-danger-600',
+    success: 'bg-success-500 text-white hover:bg-success-600',
+  };
+  const sizes: Record<ButtonSize, string> = {
+    sm: 'text-xs px-3 py-1.5 rounded-sm gap-1.5',
+    md: 'text-sm px-4 py-2 rounded-md gap-2',
+    lg: 'text-base px-6 py-3 rounded-lg gap-2.5',
+    icon: 'p-2 rounded-md',
+  };
+  return (
+    <button
+      disabled={disabled || loading}
+      className={cn('inline-flex items-center justify-center font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed', variants[variant], sizes[size], className)}
+      {...props}
+    >
+      {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+      {!loading && leftIcon}
+      {children}
+      {!loading && rightIcon}
+    </button>
+  );
+}

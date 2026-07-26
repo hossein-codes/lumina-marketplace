@@ -1,49 +1,30 @@
-'use client';
-
 import Link from 'next/link';
+import { Home, Store, ShoppingCart, Heart, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
-import { Grid, Heart, Home, ShoppingCart, User } from 'lucide-react';
-import { useCartStore } from '@/lib/stores/cartStore';
-import { cn } from '@/lib/utils/cn';
 
-const items = [
-  { href: '/', label: 'خانه', Icon: Home },
-  { href: '/shop', label: 'دسته‌ها', Icon: Grid },
-  { href: '/cart', label: 'سبد', Icon: ShoppingCart, badge: true },
-  { href: '/wishlist', label: 'علاقه‌مندی', Icon: Heart },
-  { href: '/profile', label: 'حساب', Icon: User },
+const tabs = [
+  { href: '/', label: 'خانه', icon: Home },
+  { href: '/shop', label: 'فروشگاه', icon: Store },
+  { href: '/cart', label: 'سبد', icon: ShoppingCart },
+  { href: '/wishlist', label: 'علاقه‌مندی', icon: Heart },
+  { href: '/profile', label: 'من', icon: User },
 ];
 
 export function MobileTabBar() {
   const pathname = usePathname();
-  const itemCount = useCartStore((s) => s.itemCount());
   return (
-    <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-[var(--surface-card)] border-t border-[var(--border-subtle)] pb-[env(safe-area-inset-bottom)]">
-      <ul className="grid grid-cols-5 h-16">
-        {items.map(({ href, label, Icon, badge }) => {
-          const active =
-            href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[var(--surface-card)]/95 backdrop-blur-lg border-t border-[var(--border-subtle)]">
+      <div className="flex items-center justify-around px-2 py-1.5">
+        {tabs.map((tab) => {
+          const active = pathname === tab.href || (tab.href !== '/' && pathname?.startsWith(tab.href));
           return (
-            <li key={href}>
-              <Link
-                href={href}
-                className={cn(
-                  'h-full flex flex-col items-center justify-center gap-1 text-[11px] transition-colors relative',
-                  active ? 'text-[var(--color-brand-500)]' : 'text-[var(--text-muted)]'
-                )}
-              >
-                <Icon size={22} />
-                <span>{label}</span>
-                {badge && itemCount > 0 && (
-                  <span className="absolute top-1.5 right-6 text-[10px] bg-[var(--color-brand-500)] text-white rounded-full min-w-4 h-4 grid place-items-center px-1 font-num">
-                    {itemCount}
-                  </span>
-                )}
-              </Link>
-            </li>
+            <Link key={tab.href} href={tab.href} className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg transition-colors ${active ? 'text-brand-600' : 'text-ink-400 hover:text-ink-600'}`}>
+              <tab.icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{tab.label}</span>
+            </Link>
           );
         })}
-      </ul>
+      </div>
     </nav>
   );
 }

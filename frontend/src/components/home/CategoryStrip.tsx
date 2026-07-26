@@ -1,60 +1,33 @@
-'use client';
-
-import Image from 'next/image';
 import Link from 'next/link';
-import { useQuery } from '@tanstack/react-query';
-import { categoryService } from '@/lib/api/services';
-import { Skeleton } from '@/components/ui/Skeleton';
+import { Smartphone, Laptop, Headphones, Home, Shirt, Sparkles, Trophy, Plane } from 'lucide-react';
+
+const categories = [
+  { name: 'دیجیتال', slug: 'digital', icon: Sparkles, image: 'https://images.unsplash.com/photo-1518770660439-4636500cff5f?w=300&q=80' },
+  { name: 'موبایل', slug: 'mobile', icon: Smartphone, image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=300&q=80' },
+  { name: 'لپ‌تاپ', slug: 'laptop', icon: Laptop, image: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=300&q=80' },
+  { name: 'صوتی', slug: 'audio-video', icon: Headphones, image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&q=80' },
+  { name: 'خانه', slug: 'home-kitchen', icon: Home, image: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&q=80' },
+  { name: 'مد', slug: 'fashion', icon: Shirt, image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&q=80' },
+  { name: 'زیبایی', slug: 'beauty-health', icon: Sparkles, image: 'https://images.unsplash.com/photo-1571781926291-c477ebfd024b?w=300&q=80' },
+  { name: 'ورزش', slug: 'sport-travel', icon: Trophy, image: 'https://images.unsplash.com/photo-1517649763962-0c623066013b?w=300&q=80' },
+];
 
 export function CategoryStrip() {
-  const { data, isLoading } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => (await categoryService.list()).data ?? [],
-    staleTime: 5 * 60_000,
-  });
-
   return (
-    <section className="container-page mt-10">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg md:text-xl font-black">دسته‌بندی‌ها</h2>
-        <Link href="/shop" className="text-sm text-[var(--color-brand-600)] font-medium">
-          مشاهده همه
-        </Link>
-      </div>
-
-      {isLoading ? (
-        <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="flex flex-col items-center gap-2">
-              <Skeleton className="w-16 h-16 rounded-full" />
-              <Skeleton className="w-14 h-3" />
+    <section className="py-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        {categories.map((cat) => (
+          <Link key={cat.slug} href={`/shop?category=${cat.slug}`} className="group relative rounded-2xl overflow-hidden bg-[var(--surface-card)] border border-[var(--border-subtle)] hover:border-brand-300 hover:shadow-md transition-all">
+            <div className="aspect-[4/3] overflow-hidden">
+              <img src={cat.image} alt={cat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
             </div>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
-          {(data ?? []).slice(0, 8).map((c) => (
-            <Link
-              key={c.id}
-              href={`/shop?category=${c.slug}`}
-              className="group flex flex-col items-center gap-2 rounded-xl p-3 hover:bg-[var(--surface-card)] transition-colors"
-            >
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-[var(--surface-card)] border border-[var(--border-subtle)] overflow-hidden relative group-hover:border-[var(--color-brand-300)] transition-colors">
-                {c.image ? (
-                  <Image src={c.image} alt={c.name} fill className="object-cover" sizes="80px" />
-                ) : (
-                  <div className="w-full h-full grid place-items-center text-[var(--text-muted)] text-lg font-bold">
-                    {c.name?.[0]}
-                  </div>
-                )}
-              </div>
-              <span className="text-xs md:text-sm text-[var(--text-primary)] text-center line-clamp-1">
-                {c.name}
-              </span>
-            </Link>
-          ))}
-        </div>
-      )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent"></div>
+            <div className="absolute bottom-0 left-0 right-0 p-3">
+              <h3 className="text-white font-bold text-sm drop-shadow-lg">{cat.name}</h3>
+            </div>
+          </Link>
+        ))}
+      </div>
     </section>
   );
 }

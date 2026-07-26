@@ -1,41 +1,18 @@
-import { applyDiscount, formatNumber, formatPrice } from '@/lib/utils/format';
-import { cn } from '@/lib/utils/cn';
+import { formatPrice, applyDiscount } from '@/lib/utils/format';
 
-export function Price({
-  value,
-  discountPercentage,
-  size = 'md',
-  className,
-}: {
-  value: number | string;
-  discountPercentage?: number | string | null;
-  size?: 'sm' | 'md' | 'lg';
-  className?: string;
-}) {
-  const price = Number(value) || 0;
-  const disc = Number(discountPercentage) || 0;
-  const final = applyDiscount(price, disc);
-  const sizes = {
-    sm: { main: 'text-sm', old: 'text-[11px]', pct: 'text-[10px]' },
-    md: { main: 'text-base', old: 'text-xs', pct: 'text-[11px]' },
-    lg: { main: 'text-xl', old: 'text-sm', pct: 'text-xs' },
-  } as const;
-  const s = sizes[size];
+export function Price({ price, discountPercentage }: { price: number | string; discountPercentage?: number | null }) {
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+  const hasDiscount = discountPercentage && discountPercentage > 0;
+  const final = hasDiscount ? applyDiscount(numPrice, discountPercentage) : numPrice;
   return (
-    <div className={cn('flex flex-col items-end gap-0.5', className)}>
-      {disc > 0 && (
-        <div className="flex items-center gap-2">
-          <span className={cn('bg-[var(--color-brand-500)] text-white font-bold rounded-full px-1.5 py-0.5 font-num', s.pct)}>
-            ٪{formatNumber(disc)}
-          </span>
-          <span className={cn('text-[var(--text-muted)] line-through font-num', s.old)}>
-            {formatNumber(price)}
-          </span>
-        </div>
+    <div className="flex items-baseline gap-2 flex-wrap">
+      <span className="text-xl font-bold text-brand-600 font-num">{formatPrice(final)}</span>
+      {hasDiscount && (
+        <>
+          <span className="text-sm text-[var(--text-muted)] line-through font-num">{formatPrice(numPrice)}</span>
+          <span className="text-xs font-bold text-success-600 bg-success-50 px-1.5 py-0.5 rounded">{discountPercentage}% تخفیف</span>
+        </>
       )}
-      <span className={cn('font-extrabold font-num text-[var(--text-primary)]', s.main)}>
-        {formatPrice(final)}
-      </span>
     </div>
   );
 }
