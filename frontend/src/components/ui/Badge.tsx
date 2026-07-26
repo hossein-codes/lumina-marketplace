@@ -1,30 +1,15 @@
-import type { HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils/cn';
 
-type Variant = 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'info';
+type BadgeVariant = 'neutral' | 'brand' | 'success' | 'warning' | 'danger' | 'info';
 
-const styles: Record<Variant, string> = {
-  neutral: 'bg-[var(--color-ink-100)] text-[var(--color-ink-700)]',
-  brand: 'bg-[var(--color-brand-50)] text-[var(--color-brand-700)]',
-  success: 'bg-emerald-50 text-emerald-700',
-  warning: 'bg-amber-50 text-amber-700',
-  danger: 'bg-rose-50 text-rose-700',
-  info: 'bg-sky-50 text-sky-700',
-};
-
-export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
-  variant?: Variant;
-}
-
-export function Badge({ variant = 'neutral', className, ...rest }: BadgeProps) {
-  return (
-    <span
-      className={cn(
-        'inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium',
-        styles[variant],
-        className
-      )}
-      {...rest}
-    />
-  );
+export function Badge({ children, variant = 'neutral', className }: { children: React.ReactNode; variant?: BadgeVariant; className?: string }) {
+  const variants: Record<BadgeVariant, string> = {
+    neutral: 'bg-ink-100 text-ink-700',
+    brand: 'bg-brand-50 text-brand-700',
+    success: 'bg-success-50 text-success-700',
+    warning: 'bg-warning-50 text-warning-700',
+    danger: 'bg-danger-50 text-danger-600',
+    info: 'bg-info-50 text-info-700',
+  };
+  return <span className={cn('inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium', variants[variant], className)}>{children}</span>;
 }

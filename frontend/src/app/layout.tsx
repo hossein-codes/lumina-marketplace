@@ -1,42 +1,25 @@
-import type { Metadata, Viewport } from 'next';
-import '@/styles/globals.css';
+import type { Metadata } from 'next';
+import '../styles/globals.css';
+import { Toaster } from 'sonner';
 import { Providers } from './providers';
-import { Header } from '@/components/layout/Header';
-import { Footer } from '@/components/layout/Footer';
-import { MobileTabBar } from '@/components/layout/MobileTabBar';
 
 export const metadata: Metadata = {
-  title: {
-    default: 'لومینا — فروشگاه آنلاین',
-    template: '%s | لومینا',
-  },
-  description:
-    'لومینا، تجربه‌ای مدرن از خرید آنلاین؛ محصولات دیجیتال، پوشاک، خانه و آشپزخانه با ارسال سریع.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
-  openGraph: {
-    type: 'website',
-    locale: 'fa_IR',
-    siteName: 'لومینا',
-  },
-  icons: { icon: '/favicon.ico' },
-};
-
-export const viewport: Viewport = {
-  themeColor: '#ef394a',
-  width: 'device-width',
-  initialScale: 1,
+  title: 'لومینا مارکت | فروشگاه آنلاین حرفه‌ای',
+  description: 'فروشگاه آنلاین حرفه‌ای با بهترین قیمت‌ها و ارسال سریع',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fa" dir="rtl" suppressHydrationWarning>
-      <body>
+    <html lang="fa" dir="rtl">
+      <head>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+        <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+      </head>
+      <body className="font-vazirmatn bg-[var(--surface-page)] text-[var(--text-primary)] antialiased min-h-screen">
         <Providers>
-          <Header />
-          <main className="min-h-[calc(100vh-4rem)] pb-24 md:pb-8">{children}</main>
-          <Footer />
-          <MobileTabBar />
+          {children}
         </Providers>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   );

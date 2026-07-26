@@ -1,24 +1,19 @@
 import { Star } from 'lucide-react';
 import { cn } from '@/lib/utils/cn';
 
-export function Rating({
-  value,
-  size = 14,
-  showValue = true,
-  className,
-}: {
-  value: number | string;
-  size?: number;
-  showValue?: boolean;
-  className?: string;
-}) {
-  const v = Number(value) || 0;
+export function Rating({ value, max = 5, showValue = true }: { value?: number | null; max?: number; showValue?: boolean }) {
+  const val = value || 0;
   return (
-    <span className={cn('inline-flex items-center gap-1 text-[var(--color-warning-500)]', className)}>
-      <Star size={size} fill="currentColor" strokeWidth={0} />
-      {showValue && (
-        <span className="text-xs font-medium font-num text-[var(--text-primary)]">{v.toFixed(1)}</span>
-      )}
-    </span>
+    <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-0.5" dir="ltr">
+        {Array.from({ length: max }).map((_, i) => (
+          <Star
+            key={i}
+            className={cn('w-4 h-4', i < Math.round(val) ? 'text-amber-400 fill-amber-400' : 'text-ink-200')}
+          />
+        ))}
+      </div>
+      {showValue && val > 0 && <span className="text-xs text-[var(--text-muted)] font-num">{val.toFixed(1)}</span>}
+    </div>
   );
 }

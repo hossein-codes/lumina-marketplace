@@ -1,104 +1,59 @@
-'use client';
-
+"use client";
 import { useState } from 'react';
-import Link from 'next/link';
+import { UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { Lock, Mail, Phone, User } from 'lucide-react';
-import { toast } from 'sonner';
-import { useAuthStore } from '@/lib/stores/authStore';
-import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const register = useAuthStore((s) => s.register);
-  const [form, setForm] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-  });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', phone: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [showPass, setShowPass] = useState(false);
 
-  const change = <K extends keyof typeof form>(k: K, v: string) =>
-    setForm((f) => ({ ...f, [k]: v }));
-
-  const submit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (form.password.length < 6) {
-      toast.error('رمز عبور باید حداقل ۶ کاراکتر باشد');
-      return;
-    }
     setLoading(true);
     try {
-      await register(form);
-      toast.success('ثبت‌نام موفق');
-      router.replace('/');
-    } catch (err) {
-      toast.error((err as Error).message || 'ثبت‌نام ناموفق');
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem('token', data.data.token);
+        router.push('/');
+      } else {
+        alert(data.error || 'خطا در ثبت‌نام');
+      }
+    } catch {
+      alert('خطا در ارتباط');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container-page py-10 max-w-md">
-      <div className="rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)] p-6">
-        <h1 className="text-xl font-black text-center mb-1">ایجاد حساب کاربری</h1>
-        <p className="text-sm text-[var(--text-muted)] text-center mb-6">
-          چند ثانیه، برای دسترسی به هزاران کالا
-        </p>
-        <form onSubmit={submit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="نام"
-              value={form.firstName}
-              onChange={(e) => change('firstName', e.target.value)}
-              leftIcon={<User size={16} />}
-              required
-            />
-            <Input
-              label="نام خانوادگی"
-              value={form.lastName}
-              onChange={(e) => change('lastName', e.target.value)}
-            />
-          </div>
-          <Input
-            label="ایمیل"
-            type="email"
-            value={form.email}
-            onChange={(e) => change('email', e.target.value)}
-            leftIcon={<Mail size={16} />}
-            required
-          />
-          <Input
-            label="شماره موبایل"
-            type="tel"
-            value={form.phone}
-            onChange={(e) => change('phone', e.target.value)}
-            leftIcon={<Phone size={16} />}
-          />
-          <Input
-            label="رمز عبور"
-            type="password"
-            value={form.password}
-            onChange={(e) => change('password', e.target.value)}
-            leftIcon={<Lock size={16} />}
-            hint="حداقل ۶ کاراکتر"
-            required
-          />
-          <Button fullWidth size="lg" type="submit" loading={loading}>
-            ثبت‌نام
-          </Button>
-        </form>
-        <div className="text-center text-sm text-[var(--text-muted)] mt-4">
-          حساب دارید؟{' '}
-          <Link href="/login" className="text-[var(--color-brand-600)] font-bold">
-            وارد شوید
-          </Link>
+    <main className="min-h-screen flex items-center justify-center px-4">
+      <div className="w-full max-w-md bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-3xl p-8 shadow-xl">
+        <div className="text-center mb-8">
+          <h1 className="text-2xl font-black text-[var(--text-primary)] mb-2">ثبت‌نام در لومینا</h1>
+          <p className="text-sm text-[var(--text-muted)]">به خانواده بزرگ لومینا بپیوندید</p>
         </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="نام" placeholder="نام" value={form.firstName} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+            <Input label="نام خانوادگی" placeholder="نام خانوادگی" value={form.lastName} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+          </div>
+          <Input label="ایمیل" type="email" placeholder="example@lumina.ir" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+          <Input label="تلفن" placeholder="۰۹۱۲..." value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <Input label="رمز عبور" type={showPass ? 'text' : 'password'} placeholder="حداقل ۶ کاراکتر" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} rightIcon={<button type="button" onClick={() => setShowPass(!showPass)} className="text-ink-400 hover:text-ink-600">{showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>} />
+          <Button type="submit" loading={loading} size="lg" className="w-full mt-2"><UserPlus className="w-4 h-4" /> ثبت‌نام</Button>
+        </form>
+        <p className="text-center text-sm text-[var(--text-muted)] mt-6">قبلاً ثبت‌نام کرده‌اید؟ <Link href="/login" className="text-brand-600 hover:text-brand-700 font-medium">ورود</Link></p>
       </div>
-    </div>
+    </main>
   );
 }

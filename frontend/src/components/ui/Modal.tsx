@@ -1,56 +1,35 @@
-'use client';
-
-import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { cn } from '@/lib/utils/cn';
 
-export function Modal({
-  open,
-  onClose,
-  title,
-  children,
-  size = 'md',
-}: {
-  open: boolean;
-  onClose: () => void;
-  title?: string;
-  children: ReactNode;
-  size?: 'sm' | 'md' | 'lg';
-}) {
-  const widths = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl' } as const;
+export function Modal({ open, onClose, title, children, className }: { open: boolean; onClose: () => void; title?: string; children: React.ReactNode; className?: string }) {
   return (
     <AnimatePresence>
       {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center px-4"
+          onClick={onClose}
+        >
           <motion.div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
-          <motion.div
-            className={`relative w-full ${widths[size]} rounded-2xl bg-[var(--surface-card)] shadow-2xl overflow-hidden`}
-            initial={{ opacity: 0, scale: 0.95, y: 8 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 8 }}
-            transition={{ type: 'spring', duration: 0.25 }}
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className={cn('bg-[var(--surface-card)] rounded-2xl shadow-xl w-full max-w-lg overflow-hidden', className)}
+            onClick={(e) => e.stopPropagation()}
           >
-            {(title || onClose) && (
-              <div className="flex items-center justify-between p-4 border-b border-[var(--border-subtle)]">
-                <h3 className="text-base font-bold">{title}</h3>
-                <button
-                  onClick={onClose}
-                  className="p-1 rounded-md hover:bg-[var(--surface-muted)]"
-                  aria-label="بستن"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            )}
-            <div>{children}</div>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--border-subtle)]">
+              <h3 className="text-lg font-bold text-[var(--text-primary)]">{title}</h3>
+              <button onClick={onClose} className="p-1 hover:bg-[var(--surface-muted)] rounded-md text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-5">{children}</div>
           </motion.div>
-        </div>
+        </motion.div>
       )}
     </AnimatePresence>
   );

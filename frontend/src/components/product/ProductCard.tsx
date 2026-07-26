@@ -1,108 +1,48 @@
-'use client';
-
-import Image from 'next/image';
+"use client";
 import Link from 'next/link';
-import { Heart, ShoppingCart } from 'lucide-react';
-import { toast } from 'sonner';
-import type { Product } from '@/lib/types';
-import { useCartStore } from '@/lib/stores/cartStore';
-import { useWishlistStore } from '@/lib/stores/wishlistStore';
-import { Badge } from '@/components/ui/Badge';
+import { Heart, ShoppingCart, Plus } from 'lucide-react';
 import { Price } from '@/components/ui/Price';
 import { Rating } from '@/components/ui/Rating';
-import { cn } from '@/lib/utils/cn';
+import { Badge } from '@/components/ui/Badge';
+import { useState } from 'react';
 
-export function ProductCard({ product, compact = false }: { product: Product; compact?: boolean }) {
-  const addToCart = useCartStore((s) => s.add);
-  const toggleWish = useWishlistStore((s) => s.toggle);
-  const inWishlist = useWishlistStore((s) => s.has(product.id));
-
-  const handleAdd = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await addToCart(product, 1);
-    toast.success('به سبد خرید اضافه شد', { description: product.title });
-  };
-
-  const handleWish = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    await toggleWish(product);
-    toast(inWishlist ? 'از علاقه‌مندی‌ها حذف شد' : 'به علاقه‌مندی‌ها اضافه شد');
-  };
-
+export function ProductCard({ product }: { product: any }) {
+  const [liked, setLiked] = useState(false);
   return (
-    <Link
-      href={`/product/${product.slug}`}
-      className={cn(
-        'group relative flex flex-col rounded-2xl border border-[var(--border-subtle)] bg-[var(--surface-card)]',
-        'hover:border-[var(--color-brand-300)] hover:shadow-[var(--shadow-md)] transition-all overflow-hidden'
-      )}
-    >
-      <button
-        onClick={handleWish}
-        aria-label="افزودن به علاقه‌مندی"
-        className={cn(
-          'absolute top-3 left-3 z-10 h-9 w-9 rounded-full grid place-items-center transition-colors',
-          'bg-[var(--surface-card)]/90 backdrop-blur border border-[var(--border-subtle)]',
-          inWishlist ? 'text-[var(--color-brand-500)]' : 'text-[var(--text-muted)] hover:text-[var(--color-brand-500)]'
-        )}
-      >
-        <Heart size={16} fill={inWishlist ? 'currentColor' : 'none'} />
-      </button>
-
-      {product.isFlashSale && (
-        <Badge variant="brand" className="absolute top-3 right-3 z-10">
-          فروش ویژه
-        </Badge>
-      )}
-      {!product.isFlashSale && product.isNew && (
-        <Badge variant="info" className="absolute top-3 right-3 z-10">
-          جدید
-        </Badge>
-      )}
-
-      <div className="relative aspect-square bg-[var(--surface-muted)]">
-        <Image
-          src={product.thumbnail}
-          alt={product.title}
-          fill
-          sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-500"
-        />
-      </div>
-
-      <div className={cn('flex flex-col gap-2 p-3', compact && 'p-2')}>
-        <h3
-          className={cn(
-            'text-sm font-medium text-[var(--text-primary)] line-clamp-2 min-h-[2.6em]',
-            compact && 'text-xs min-h-[2.4em]'
-          )}
+    <div className="group relative bg-[var(--surface-card)] border border-[var(--border-subtle)] rounded-2xl overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+      <Link href={`/product/${product.slug}`} className="block relative">
+        <div className="aspect-[4/3] overflow-hidden">
+          <img src={product.thumbnail} alt={product.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+        </div>
+        <div className="absolute top-3 left-3 flex flex-col gap-1">
+          {product.isNew && <Badge variant="brand" className="text-[10px]">جدید</Badge>}
+          {product.isFlashSale && <Badge variant="danger" className="text-[10px]">فروش ویژه</Badge>}
+          {product.discountPercentage && product.discountPercentage > 0 && <Badge variant="success" className="text-[10px]">{product.discountPercentage}%</Badge>}
+        </div>
+        <button
+          onClick={(e) => { e.preventDefault(); setLiked(!liked); }}
+          className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur rounded-full shadow-sm hover:bg-white hover:shadow-md transition-all"
+          aria-label="علاقه‌مندی"
         >
-          {product.title}
-        </h3>
+          <Heart className={`w-4 h-4 transition-colors ${liked ? 'text-brand-500 fill-brand-500' : 'text-ink-400'}`} />
+        </button>
+      </Link>
 
-        <div className="flex items-center justify-between">
+      <div className="p-4 flex flex-col gap-2">
+        <Link href={`/product/${product.slug}`} className="text-sm font-semibold text-[var(--text-primary)] hover:text-brand-600 line-clamp-2 leading-relaxed transition-colors">{product.title}</Link>
+        <div className="flex items-center gap-1">
           <Rating value={product.rating} />
-          {product.stock > 0 ? (
-            <span className="text-[11px] text-emerald-600 font-medium">موجود</span>
-          ) : (
-            <span className="text-[11px] text-[var(--text-muted)]">ناموجود</span>
-          )}
+          <span className="text-[10px] text-[var(--text-muted)]">({product.reviewCount})</span>
         </div>
-
-        <div className="flex items-end justify-between pt-1">
-          <button
-            onClick={handleAdd}
-            disabled={product.stock === 0}
-            className="h-9 w-9 grid place-items-center rounded-full bg-[var(--color-brand-500)] text-white hover:bg-[var(--color-brand-600)] disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="افزودن به سبد"
-          >
-            <ShoppingCart size={16} />
+        <div className="flex items-end justify-between gap-2 mt-1">
+          <Price price={product.price} discountPercentage={product.discountPercentage} />
+        </div>
+        <div className="flex gap-2 mt-1">
+          <button className="flex-1 flex items-center justify-center gap-1.5 bg-brand-500 hover:bg-brand-600 text-white text-xs font-medium py-2 rounded-lg transition-colors">
+            <ShoppingCart className="w-3.5 h-3.5" /> افزودن به سبد
           </button>
-          <Price value={product.price} discountPercentage={product.discountPercentage} size="sm" />
         </div>
       </div>
-    </Link>
+    </div>
   );
 }

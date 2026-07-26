@@ -1,57 +1,33 @@
-/**
- * Formatting helpers for prices, numbers, dates.
- * All strings are Persian-friendly.
- */
-
-const nfIR = new Intl.NumberFormat('fa-IR');
-
-export function formatNumber(value: number | string | null | undefined): string {
-  if (value === null || value === undefined || value === '') return '۰';
-  const n = typeof value === 'string' ? Number(value) : value;
-  if (Number.isNaN(n)) return '۰';
-  return nfIR.format(n);
+export function formatPrice(price: number | string | undefined | null): string {
+  if (price === undefined || price === null) return '۰ تومان';
+  const num = typeof price === 'string' ? parseFloat(price) : price;
+  if (isNaN(num)) return '۰ تومان';
+  return new Intl.NumberFormat('fa-IR').format(num) + ' تومان';
 }
 
-export function formatPrice(
-  value: number | string | null | undefined,
-  opts: { currency?: string; suffix?: string } = {}
-): string {
-  const suffix = opts.suffix ?? 'تومان';
-  return `${formatNumber(value)} ${suffix}`;
+export function formatNumber(num: number): string {
+  return new Intl.NumberFormat('fa-IR').format(num);
 }
 
-/**
- * Calculate final price after discount.
- */
-export function applyDiscount(price: number, discountPercentage?: number | null): number {
-  if (!discountPercentage) return price;
-  return Math.round(price * (1 - discountPercentage / 100));
+export function formatDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('fa-IR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(d);
 }
 
-/**
- * Difference between original and discounted price.
- */
-export function discountAmount(price: number, discountPercentage?: number | null): number {
-  if (!discountPercentage) return 0;
-  return Math.round(price * (discountPercentage / 100));
+export function applyDiscount(price: number, discount?: number | null): number {
+  if (!discount || discount <= 0) return price;
+  return Math.round(price * (1 - discount / 100));
 }
 
-const dtfIR = new Intl.DateTimeFormat('fa-IR', {
-  dateStyle: 'medium',
-  timeStyle: 'short',
-});
-
-export function formatDate(value: string | Date | null | undefined): string {
-  if (!value) return '';
-  const d = typeof value === 'string' ? new Date(value) : value;
-  if (Number.isNaN(d.getTime())) return '';
-  return dtfIR.format(d);
-}
-
-export function slugify(input: string): string {
-  return input
-    .trim()
+export function slugify(text: string): string {
+  return text
     .toLowerCase()
-    .replace(/[^a-z0-9\u0600-\u06FF]+/g, '-')
-    .replace(/^-+|-+$/g, '');
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .trim();
 }

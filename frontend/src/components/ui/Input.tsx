@@ -1,64 +1,38 @@
-'use client';
-
-import { forwardRef, type InputHTMLAttributes, type ReactNode } from 'react';
 import { cn } from '@/lib/utils/cn';
+import { AlertCircle } from 'lucide-react';
 
-export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   hint?: string;
   error?: string;
-  leftIcon?: ReactNode;
-  rightIcon?: ReactNode;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
 }
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, hint, error, leftIcon, rightIcon, className, id, ...rest }, ref) => {
-    const uid = id || rest.name;
-    return (
-      <div className="w-full">
-        {label && (
-          <label
-            htmlFor={uid}
-            className="block mb-1.5 text-sm font-medium text-[var(--text-primary)]"
-          >
-            {label}
-          </label>
-        )}
-        <div
+export function Input({ label, hint, error, leftIcon, rightIcon, className, ...props }: InputProps) {
+  return (
+    <div className="flex flex-col gap-1.5 w-full">
+      {label && <label htmlFor={props.id} className="text-sm font-medium text-ink-700">{label}</label>}
+      <div className="relative">
+        {leftIcon && <span className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-400">{leftIcon}</span>}
+        <input
           className={cn(
-            'relative flex items-center rounded-lg border transition-colors',
-            'bg-[var(--surface-card)]',
-            error
-              ? 'border-[var(--color-danger-500)]'
-              : 'border-[var(--border-default)] focus-within:border-[var(--color-brand-500)]'
+            'w-full bg-[var(--surface-card)] border border-[var(--border-default)] rounded-lg py-2.5 px-4 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--ring-focus)] focus:ring-2 focus:ring-[var(--ring-focus)]/20 transition-all',
+            leftIcon ? 'pl-10' : '',
+            rightIcon ? 'pr-10' : '',
+            error ? 'border-danger-500 focus:border-danger-500 focus:ring-danger-500/20' : '',
+            className
           )}
-        >
-          {leftIcon && <span className="pr-3 pl-1 text-[var(--text-muted)]">{leftIcon}</span>}
-          <input
-            id={uid}
-            ref={ref}
-            className={cn(
-              'w-full bg-transparent px-3 py-2.5 text-sm text-[var(--text-primary)]',
-              'placeholder:text-[var(--text-muted)] outline-none',
-              leftIcon && 'pr-0',
-              className
-            )}
-            {...rest}
-          />
-          {rightIcon && <span className="pl-3 pr-1 text-[var(--text-muted)]">{rightIcon}</span>}
-        </div>
-        {(hint || error) && (
-          <p
-            className={cn(
-              'mt-1 text-xs',
-              error ? 'text-[var(--color-danger-500)]' : 'text-[var(--text-muted)]'
-            )}
-          >
-            {error || hint}
-          </p>
-        )}
+          {...props}
+        />
+        {rightIcon && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-400">{rightIcon}</span>}
       </div>
-    );
-  }
-);
-Input.displayName = 'Input';
+      {hint && !error && <p className="text-xs text-[var(--text-muted)]">{hint}</p>}
+      {error && (
+        <p className="text-xs text-danger-600 flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" /> {error}
+        </p>
+      )}
+    </div>
+  );
+}

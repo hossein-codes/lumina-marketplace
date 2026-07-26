@@ -1,40 +1,41 @@
-import type { OrderStatus } from '@/lib/types';
+import { OrderStatus } from '@prisma/client';
 
 export function statusLabel(status: OrderStatus): string {
-  switch (status) {
-    case 'PENDING': return 'در انتظار پرداخت';
-    case 'CONFIRMED': return 'تایید شده';
-    case 'PROCESSING': return 'در حال آماده‌سازی';
-    case 'SHIPPED': return 'ارسال شده';
-    case 'DELIVERED': return 'تحویل داده شده';
-    case 'CANCELLED': return 'لغو شده';
-    case 'REFUNDED': return 'مسترد شده';
-    default: return status;
-  }
+  const labels: Record<OrderStatus, string> = {
+    PENDING: 'در انتظار تأیید',
+    CONFIRMED: 'تأیید شده',
+    PROCESSING: 'در حال پردازش',
+    SHIPPED: 'ارسال شده',
+    DELIVERED: 'تحویل داده شده',
+    CANCELLED: 'لغو شده',
+    REFUNDED: 'بازگشت داده شده',
+  };
+  return labels[status] || status;
 }
 
-export function statusVariant(status: OrderStatus): 'brand' | 'success' | 'warning' | 'info' | 'danger' | 'neutral' {
+export function statusVariant(status: OrderStatus): 'default' | 'success' | 'warning' | 'danger' | 'info' {
   switch (status) {
-    case 'PENDING': return 'warning';
-    case 'CONFIRMED':
-    case 'PROCESSING': return 'info';
-    case 'SHIPPED': return 'brand';
-    case 'DELIVERED': return 'success';
+    case 'DELIVERED':
+      return 'success';
+    case 'SHIPPED':
+      return 'info';
+    case 'PROCESSING':
+      return 'warning';
     case 'CANCELLED':
-    case 'REFUNDED': return 'danger';
-    default: return 'neutral';
+    case 'REFUNDED':
+      return 'danger';
+    default:
+      return 'default';
   }
 }
 
-export const orderProgressSteps: { key: OrderStatus; label: string }[] = [
-  { key: 'PENDING', label: 'ثبت سفارش' },
-  { key: 'CONFIRMED', label: 'تأیید پرداخت' },
-  { key: 'PROCESSING', label: 'آماده‌سازی' },
-  { key: 'SHIPPED', label: 'ارسال' },
-  { key: 'DELIVERED', label: 'تحویل' },
-];
-
-export function stepIndex(status: OrderStatus): number {
-  const i = orderProgressSteps.findIndex((s) => s.key === status);
-  return i === -1 ? 0 : i;
+export function orderProgressSteps(status: OrderStatus) {
+  const steps = [
+    { key: 'PENDING', label: 'در انتظار تأیید', completed: ['CONFIRMED', 'PROCESSING', 'SHIPPED', 'DELIVERED'].includes(status) },
+    { key: 'CONFIRMED', label: 'تأیید شده', completed: ['PROCESSING', 'SHIPPED', 'DELIVERED'].includes(status) },
+    { key: 'PROCESSING', label: 'در حال پردازش', completed: ['SHIPPED', 'DELIVERED'].includes(status) },
+    { key: 'SHIPPED', label: 'ارسال شده', completed: ['DELIVERED'].includes(status) },
+    { key: 'DELIVERED', label: 'تحویل داده شده', completed: status === 'DELIVERED' },
+  ];
+  return steps;
 }
